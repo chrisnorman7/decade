@@ -77,10 +77,11 @@ class _KeyboardHandlerWidgetState extends State<KeyboardHandlerWidget> {
     final focusNode = FocusNode();
     return Scaffold(
         appBar: AppBar(title: Text('Decade')),
-        body: RawKeyboardListener(
+        body: Focus(
+            child: RawKeyboardListener(
           focusNode: focusNode,
           onKey: game.handleKey,
           child: Center(child: Text('Keyboard focus goes here.')),
-        ));
+        )));
   }
 }
