@@ -4,6 +4,23 @@ import 'package:flutter/services.dart';
 
 import 'decade.dart';
 
+/// A game with some overridden methods.
+class MyGame extends DecadeGame {
+  /// Create a game.
+  MyGame(String title) : super(title) {
+    tts
+      ..load()
+      ..trySapi(true);
+  }
+
+  /// The speech subsystem.
+  final Tolk tts = Tolk.windows();
+
+  /// Output some text.
+  @override
+  void output(String text) => tts.output(text);
+}
+
 /// Run the program.
 ///
 /// All keyboard events should be captured and spoken, until I can do something
@@ -43,29 +60,23 @@ class KeyboardHandlerWidget extends StatefulWidget {
 
 /// State for [KeyboardHandlerWidget].
 class _KeyboardHandlerWidgetState extends State<KeyboardHandlerWidget> {
-  /// The speech subsystem.
-  final Tolk tts = Tolk.windows();
-
   /// The game to add actions and levels to.
-  final DecadeGame game = DecadeGame('Decade Example');
+  final MyGame game = MyGame('Decade Example');
 
-  /// Initialise [tts].
+  /// Create an initial level.
   @override
   void initState() {
     super.initState();
-    tts
-      ..load()
-      ..trySapi(true);
     final l = DecadeLevel(game, 'First Level')
       ..actions.addAll(<DecadeAction>[
         DecadeAction('Move up', DecadeHotkey(LogicalKeyboardKey.arrowUp),
-            triggerFunc: () => tts.output('Up arrow.')),
+            triggerFunc: () => game.output('Up arrow.')),
         DecadeAction('Move down', DecadeHotkey(LogicalKeyboardKey.arrowDown),
-            triggerFunc: () => tts.output('Down arrow.')),
+            triggerFunc: () => game.output('Down arrow.')),
         DecadeAction('Fire', DecadeHotkey(LogicalKeyboardKey.space),
             // ignore: avoid_print
             triggerFunc: () => print(new String.fromCharCodes([0x07])),
-            stopFunc: () => tts.output('Stop firing.'),
+            stopFunc: () => game.output('Stop firing.'),
             interval: Duration(seconds: 2))
       ]);
     game.pushLevel(l);
