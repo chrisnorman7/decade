@@ -73,26 +73,36 @@ class DecadeAction extends TitleMixin {
   /// times by the hotkey being held down.
   final Duration? interval;
 
+  DateTime? _lastRun;
+
   /// The time this action was last used.
-  DateTime? lastRun;
+  DateTime? get lastRun => _lastRun;
 
   /// The timer which handles running this action.
-  Timer? timer;
+  Timer? _timer;
+
+  bool _running = false;
 
   /// Whether or not this action is running.
-  bool running = false;
+  bool get running => _running;
+
+  bool _hasRun = false;
+
+  /// Whether or not this action has run since [start] was called.
+  bool get hasRun => _hasRun;
 
   /// Run [triggerFunc].
   void run() {
     final i = interval;
     final now = DateTime.now();
-    final lr = lastRun;
+    final lr = _lastRun;
     if (lr == null || (i == null || now.difference(lr) >= i)) {
+      _hasRun = true;
       final tf = triggerFunc;
       if (tf != null) {
         tf();
       }
-      lastRun = now;
+      _lastRun = now;
     } else {
       final sf = spamFunc;
       if (sf != null) {
@@ -109,10 +119,11 @@ class DecadeAction extends TitleMixin {
   void start() {
     final i = interval;
     if (running == false) {
+      _hasRun = false;
       run();
       if (i != null) {
-        running = true;
-        timer = Timer.periodic(i, (timer) => run());
+        _running = true;
+        _timer = Timer.periodic(i, (timer) => run());
       }
     }
   }
@@ -122,13 +133,14 @@ class DecadeAction extends TitleMixin {
   /// If [interval] is `null`, do nothing. Otherwise, cancel the timer.
   void stop() {
     if (running == true) {
-      running = false;
-      timer?.cancel();
-      timer = null;
+      _running = false;
+      _timer?.cancel();
+      _timer = null;
       final sf = stopFunc;
-      if (sf != null) {
+      if (sf != null && hasRun) {
         sf();
       }
+      _hasRun = false;
     }
   }
 }
