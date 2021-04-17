@@ -3,9 +3,9 @@ library menu;
 
 import 'dart:math';
 
-import 'game.dart';
-import 'level.dart';
-import 'typedefs.dart';
+import '../game.dart';
+import '../level.dart';
+import '../typedefs.dart';
 
 /// An item in a menu.
 class DecadeMenuItem {
@@ -16,7 +16,7 @@ class DecadeMenuItem {
   /// The function which will be called when this item is selected.
   ///
   /// If this value is `null`, it will be impossible to activate this item.
-  final DecadeLevelCallback? func;
+  final DecadeActionCallback? func;
 
   /// The title of this item.
   ///
@@ -37,7 +37,7 @@ class DecadeMenuItem {
   final String? activateSoundUrl;
 }
 
-/// A menu, which holds a list of [DecadeMenuItem] instances.
+/// A menu which holds a list of [DecadeMenuItem] instances.
 class DecadeMenu extends DecadeLevel {
   /// Create a menu instance.
   DecadeMenu(DecadeGame game, String title, this.items) : super(game, title);
@@ -58,9 +58,8 @@ class DecadeMenu extends DecadeLevel {
     final pos = position;
     if (pos == null || pos >= items.length) {
       return null;
-    } else {
-      return items[pos];
     }
+    return items[pos];
   }
 
   /// Show the current item.
@@ -70,13 +69,9 @@ class DecadeMenu extends DecadeLevel {
   ///
   /// If the newly-selected item has a non-null [DecadeMenuItem.selectSoundUrl]
   /// attribute, that URL will be played with the [DecadeGame.playSound] method.
-  void showItem(
-      {
-
-      /// An optional item to show.
-      ///
-      /// If this value is `null`, [currentItem] will be used.
-      DecadeMenuItem? item}) {
+  ///
+  /// If [item] is `null`, [currentItem] will be used.
+  void showItem({DecadeMenuItem? item}) {
     item ??= currentItem;
     if (item == null) {
       return game.output(title);
@@ -115,5 +110,22 @@ class DecadeMenu extends DecadeLevel {
       position = min(items.length - 1, p + 1);
     }
     showItem();
+  }
+
+  /// Activate a menu item.
+  ///
+  /// If [item] is `null`, the current item will be used.
+  void activateItem({DecadeMenuItem? item}) {
+    item ??= currentItem;
+    if (item != null) {
+      final activateSound = item.activateSoundUrl;
+      if (activateSound != null) {
+        game.playSound(activateSound);
+      }
+      final f = item.func;
+      if (f != null) {
+        f();
+      }
+    }
   }
 }

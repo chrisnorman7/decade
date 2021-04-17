@@ -3,7 +3,6 @@ library action;
 
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
 import 'mixins.dart';
@@ -15,28 +14,96 @@ import 'typedefs.dart';
 /// [DecadeAction].
 class DecadeHotkey {
   /// Create a hotkey.
-  const DecadeHotkey(this.logicalKey,
-      {this.controlKey = false, this.altKey = false, this.shiftKey = false});
+  const DecadeHotkey(this.physicalKey,
+      {this.controlKey, this.altKey, this.shiftKey});
 
   /// The flutter key which defines this hotkey.
-  final LogicalKeyboardKey logicalKey;
+  final PhysicalKeyboardKey physicalKey;
 
-  /// Whether or not the control key is pressed.
-  final bool controlKey;
+  /// Which control key(s) need to be pressed for this hotkey to work.
+  final KeyboardSide? controlKey;
 
-  /// Whether or not the shift key is pressed.
-  final bool shiftKey;
+  /// Which shift key(s) need to be pressed for this hotkey to work.
+  final KeyboardSide? shiftKey;
 
-  /// Whether or not the alt key is held down.
-  final bool altKey;
+  /// Which alt key(s) need to be pressed for this hotkey to work.
+  final KeyboardSide? altKey;
 
-  /// Returns `true` if [event] matches this hotkey.
-  bool matches(RawKeyEvent event, {bool includeModifiers = true}) =>
-      event.logicalKey.keyId == logicalKey.keyId &&
-      (includeModifiers == false ||
-          (event.isAltPressed == altKey &&
-              event.isControlPressed == controlKey &&
-              event.isShiftPressed == shiftKey));
+  /// Match a modifier key.
+  bool _matchModifier(KeyboardSide? expected, KeyboardSide? actual) =>
+      (actual == expected) ||
+      (actual == null && expected == null) ||
+      (actual != null && expected == KeyboardSide.any);
+
+  /// Returns `true` if [eventData] matches this hotkey.
+  bool matches(RawKeyEventData eventData) {
+    if (eventData.physicalKey != physicalKey) {
+      return false;
+    }
+    // Now check modifiers.
+    return _matchModifier(controlKey,
+            eventData.getModifierSide(ModifierKey.controlModifier)) &&
+        _matchModifier(
+            shiftKey, eventData.getModifierSide(ModifierKey.shiftModifier)) &&
+        _matchModifier(
+            altKey, eventData.getModifierSide(ModifierKey.altModifier));
+  }
+
+  /// Print a string representation of this hotkey.
+  @override
+  String toString() {
+    final List<String> keys = [];
+    switch (controlKey) {
+      case KeyboardSide.any:
+        keys.add('CTRL');
+        break;
+      case KeyboardSide.left:
+        keys.add('LCTRL');
+        break;
+      case KeyboardSide.right:
+        keys.add('RCTRL');
+        break;
+      case KeyboardSide.all:
+        keys.add('CTRLS');
+        break;
+      case null:
+        break;
+    }
+    switch (altKey) {
+      case KeyboardSide.any:
+        keys.add('ALT');
+        break;
+      case KeyboardSide.left:
+        keys.add('LALT');
+        break;
+      case KeyboardSide.right:
+        keys.add('RALT');
+        break;
+      case KeyboardSide.all:
+        keys.add('ALTS');
+        break;
+      case null:
+        break;
+    }
+    switch (shiftKey) {
+      case KeyboardSide.any:
+        keys.add('SHIFT');
+        break;
+      case KeyboardSide.left:
+        keys.add('LSHIFT');
+        break;
+      case KeyboardSide.right:
+        keys.add('RSHIFT');
+        break;
+      case KeyboardSide.all:
+        keys.add('SHIFTs');
+        break;
+      case null:
+        break;
+    }
+    keys.add(physicalKey.debugName ?? '<UNKNOWN>');
+    return keys.join('+');
+  }
 }
 
 /// An action which can be called.
@@ -117,12 +184,12 @@ class DecadeAction extends TitleMixin {
   /// it to
   /// run every [interval].
   void start() {
-    final i = interval;
     if (running == false) {
+      _running = true;
+      final i = interval;
       _hasRun = false;
       run();
       if (i != null) {
-        _running = true;
         _timer = Timer.periodic(i, (timer) => run());
       }
     }

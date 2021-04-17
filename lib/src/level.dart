@@ -29,7 +29,7 @@ class DecadeLevel extends TitleMixin {
 
   /// The currently running actions.
   List<DecadeAction> get runningActions =>
-      actions.where((element) => element.running).toList();
+      actions.where((element) => element.running == true).toList();
 
   /// This level has been pushed.
   void onPush() {}
@@ -55,7 +55,7 @@ class DecadeLevel extends TitleMixin {
   /// Handle a key being pressed.
   void keyDown(RawKeyDownEvent event) {
     for (final a in actions) {
-      if (a.hotkey.matches(event)) {
+      if (a.hotkey.matches(event.data)) {
         a.start();
       }
     }
@@ -64,7 +64,7 @@ class DecadeLevel extends TitleMixin {
   /// Handle a key being released.
   void keyUp(RawKeyUpEvent event) {
     for (final a in runningActions) {
-      if (a.hotkey.matches(event, includeModifiers: false)) {
+      if (a.hotkey.matches(event.data)) {
         a.stop();
       }
     }

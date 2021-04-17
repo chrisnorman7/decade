@@ -9,5 +9,6 @@ library decade;
 export 'src/action.dart';
 export 'src/game.dart';
 export 'src/level.dart';
-export 'src/menu.dart';
+export 'src/menus/actions_menu.dart';
+export 'src/menus/menu.dart';
 export 'src/typedefs.dart';

@@ -69,17 +69,28 @@ class _KeyboardHandlerWidgetState extends State<KeyboardHandlerWidget> {
     super.initState();
     final l = DecadeLevel(game, 'First Level')
       ..actions.addAll(<DecadeAction>[
-        DecadeAction('Move up', DecadeHotkey(LogicalKeyboardKey.arrowUp),
+        DecadeAction('Move up', DecadeHotkey(PhysicalKeyboardKey.arrowUp),
             triggerFunc: () => game.output('Up arrow.')),
-        DecadeAction('Move down', DecadeHotkey(LogicalKeyboardKey.arrowDown),
+        DecadeAction('Move down', DecadeHotkey(PhysicalKeyboardKey.arrowDown),
             triggerFunc: () => game.output('Down arrow.')),
-        DecadeAction('Fire', DecadeHotkey(LogicalKeyboardKey.space),
+        DecadeAction('Fire', DecadeHotkey(PhysicalKeyboardKey.space),
             // ignore: avoid_print
             triggerFunc: () => print(new String.fromCharCodes([0x07])),
             stopFunc: () => game.output('Stop firing.'),
-            interval: Duration(seconds: 2))
+            interval: Duration(seconds: 2)),
+        DecadeAction('Show the actions menu',
+            DecadeHotkey(PhysicalKeyboardKey.slash, shiftKey: KeyboardSide.any),
+            triggerFunc: () => game.output('Show actions.'),
+            stopFunc: () {
+              final l = game.level;
+              if (l != null) {
+                final m = DecadeActionsMenu(game, l);
+                game.pushLevel(m);
+              }
+            })
       ]);
     game.pushLevel(l);
+    print(l.actions);
   }
 
   /// Build a widget.
