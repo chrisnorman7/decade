@@ -2,13 +2,18 @@
 ///
 /// This package is based on the [Earwax game engine](https://github.com/chrisnorman7/earwax).
 ///
-/// It should be easy to include this package in any system: Using web_audio on
-/// the web, and possibly translating touch events from Flutter into actions.
+///Currently, this package only runs on Windows.
 library decade;
 
 export 'src/action.dart';
 export 'src/game.dart';
 export 'src/level.dart';
+export 'src/mapping/terrain.dart';
+export 'src/mapping/zone.dart';
 export 'src/menus/actions_menu.dart';
 export 'src/menus/menu.dart';
+export 'src/sound/audio_channel.dart';
+export 'src/sound/audio_factory.dart';
+export 'src/sound/sound.dart';
 export 'src/typedefs.dart';
+export 'src/util.dart';

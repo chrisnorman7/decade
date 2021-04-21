@@ -1,109 +1,137 @@
+import 'dart:async';
+import 'dart:io';
+import 'dart:math';
+
+import 'package:dart_synthizer/dart_synthizer.dart';
 import 'package:dart_tolk/dart_tolk.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
-import 'decade.dart';
+import 'decade.dart' as decade;
 
-/// A game with some overridden methods.
-class MyGame extends DecadeGame {
-  /// Create a game.
-  MyGame(String title) : super(title) {
-    tts
-      ..load()
-      ..trySapi(true);
-  }
-
-  /// The speech subsystem.
-  final Tolk tts = Tolk.windows();
-
-  /// Output some text.
-  @override
-  void output(String text) => tts.output(text);
-}
+/// Game title.
+const String gameTitle = 'Tree Tagger';
 
 /// Run the program.
 ///
 /// All keyboard events should be captured and spoken, until I can do something
 /// more useful.
 void main() {
-  runApp(MyApp());
+  runApp(MaterialApp(
+    home: Scaffold(
+      appBar: AppBar(
+        title: Text(gameTitle),
+      ),
+      body: GameWidget(),
+    ),
+  ));
 }
 
-/// The top-level app class.
-class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) => MaterialApp(
-        title: 'Decade Experiment',
-        theme: ThemeData(
-          // This is the theme of your application.
-          //
-          // Try running your application with "flutter run". You'll see the
-          // application has a blue toolbar. Then, without quitting the app, try
-          // changing the primarySwatch below to Colors.green and then invoke
-          // "hot reload" (press "r" in the console where you ran "flutter run",
-          // or simply save your changes to "hot reload" in a Flutter IDE).
-          // Notice that the counter didn't reset back to zero; the application
-          // is not restarted.
-          primarySwatch: Colors.blue,
-        ),
-        home: KeyboardHandlerWidget(),
-      );
-}
-
-/// A widget which processes keyboard events.
-class KeyboardHandlerWidget extends StatefulWidget {
+/// The widget to display the game.
+class GameWidget extends StatefulWidget {
   /// Create state for this widget.
   @override
-  _KeyboardHandlerWidgetState createState() => _KeyboardHandlerWidgetState();
+  _GameWidgetState createState() => _GameWidgetState();
 }
 
-/// State for [KeyboardHandlerWidget].
-class _KeyboardHandlerWidgetState extends State<KeyboardHandlerWidget> {
-  /// The game to add actions and levels to.
-  final MyGame game = MyGame('Decade Example');
+/// State for [GameWidget].
+class _GameWidgetState extends State<GameWidget> {
+  /// The game.
+  decade.Game? _game;
 
-  /// Create an initial level.
-  @override
-  void initState() {
-    super.initState();
-    final l = DecadeLevel(game, 'First Level')
-      ..actions.addAll(<DecadeAction>[
-        DecadeAction('Move up', DecadeHotkey(PhysicalKeyboardKey.arrowUp),
-            triggerFunc: () => game.output('Up arrow.')),
-        DecadeAction('Move down', DecadeHotkey(PhysicalKeyboardKey.arrowDown),
-            triggerFunc: () => game.output('Down arrow.')),
-        DecadeAction('Fire', DecadeHotkey(PhysicalKeyboardKey.space),
-            // ignore: avoid_print
-            triggerFunc: () => print(new String.fromCharCodes([0x07])),
-            stopFunc: () => game.output('Stop firing.'),
-            interval: Duration(seconds: 2)),
-        DecadeAction('Show the actions menu',
-            DecadeHotkey(PhysicalKeyboardKey.slash, shiftKey: KeyboardSide.any),
-            triggerFunc: () => game.output('Show actions.'),
-            stopFunc: () {
-              final l = game.level;
-              if (l != null) {
-                final m = DecadeActionsMenu(game, l);
-                game.pushLevel(m);
-              }
-            })
-      ]);
-    game.pushLevel(l);
-    print(l.actions);
-  }
+  /// The focus nose.
+  FocusNode? _focusNode;
 
   /// Build a widget.
   @override
   Widget build(BuildContext context) {
-    final focusNode = FocusNode();
-    return Scaffold(
-        appBar: AppBar(title: Text('Decade')),
-        body: Focus(
-            child: RawKeyboardListener(
-          focusNode: focusNode,
-          onKey: game.handleKey,
-          child: Center(child: Text('Keyboard focus goes here.')),
-        )));
+    var focusNode = _focusNode;
+    if (focusNode == null) {
+      focusNode = FocusNode(debugLabel: 'Keyboard focus');
+      FocusScope.of(context).requestFocus(focusNode);
+      _focusNode = focusNode;
+    }
+    var game = _game;
+    if (game == null) {
+      game = decade.Game(
+          gameTitle,
+          Tolk.windows()
+            ..load()
+            ..trySapi(true),
+          decade.AudioFactory(Synthizer.fromPath('synthizer.dll')..initialize())
+            ..init(),
+          [])
+        ..musicChannel.gain = 0.4;
+      game.musicChannel
+          .loadFile(File('sounds/music/main_theme.wav'), stream: true)
+            ..generator.looping = true;
+      Future<void>.delayed(Duration(seconds: 1)).then((value) {
+        final g = _game;
+        if (g == null) {
+          throw Exception('Game has vanished.');
+        } else {
+          g.pushLevel(MainMenu(g));
+        }
+      });
+      _game = game;
+      _game = game;
+    }
+    return Focus(
+      child: RawKeyboardListener(
+        child: Text('Keyboard focus goes here.'),
+        focusNode: focusNode,
+        onKey: game.handleKey,
+      ),
+      autofocus: true,
+    );
   }
+
+  /// Dispose of the various subsystems.
+  @override
+  void dispose() {
+    super.dispose();
+    _focusNode?.dispose();
+    _game?.tts.unload();
+    _game?.audioFactory.destroy();
+    _game?.audioFactory.synthizer.shutdown();
+  }
+}
+
+/// The main menu.
+///
+/// This menu will always be shown, because there is currently no way to exit a
+/// Flutter desktop app.
+class MainMenu extends decade.Menu {
+  /// Create a main menu.
+  MainMenu(decade.Game game)
+      : super(
+            game,
+            'Main Menu',
+            [
+              decade.MenuItem(
+                  title: 'Play',
+                  func: () {
+                    final zone = decade.Zone(
+                        game,
+                        'forest',
+                        decade.Terrain(game.audioFactory,
+                            Directory('sounds/footsteps/dirt')),
+                        {},
+                        Point<int>(0, 0),
+                        Point<int>(100, 100));
+                    game.pushLevel(zone);
+                  }),
+              decade.MenuItem(
+                  title: 'Debug help mode',
+                  func: () {
+                    game
+                      ..helpMode = true
+                      ..output('Debug mode enabled. Disabling in 5 seconds.');
+                    Timer(Duration(seconds: 5), () {
+                      game
+                        ..helpMode = false
+                        ..output('Debug mode disabled.');
+                    });
+                  })
+            ],
+            selectSound: File('sounds/interface/beep.wav'));
 }

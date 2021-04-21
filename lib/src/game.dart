@@ -1,25 +1,51 @@
-/// Provides the [DecadeGame] class.
+/// Provides the [Game] class.
 library game;
 
+import 'dart:async';
+import 'dart:io';
+
+import 'package:dart_tolk/dart_tolk.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'action.dart';
+import 'action.dart' as actions;
 import 'level.dart';
 import 'mixins.dart';
+import 'sound/audio_channel.dart';
+import 'sound/audio_factory.dart';
 
 /// This class is the top level object.
 ///
-/// Instances of this class hold a stack of [DecadeLevel] instances.
+/// Instances of this class hold a stack of [Level] instances.
 ///
-/// You should subclass to provide text [DecadeGame.output], and the playing of
-/// sounds with [DecadeGame.playSound].
-class DecadeGame extends TitleMixin {
+/// You should subclass to provide text [Game.output], and the playing of
+/// sounds with [Game.playSound].
+class Game implements TitleMixin {
   /// Create a new game.
-  DecadeGame(this.title);
+  Game(this.title, this.tts, this.audioFactory, this.globalActions)
+      : interfaceSoundsChannel = audioFactory.createUnpannedChannel(),
+        musicChannel = audioFactory.createUnpannedChannel() {
+    setup();
+  }
 
   /// The title of this game.
   @override
   final String title;
+
+  /// The speech subsystem.
+  final Tolk tts;
+
+  /// The audio subsystem.
+  final AudioFactory audioFactory;
+
+  /// Global actions that can be triggered, regardless of pushed level.
+  final List<actions.Action> globalActions;
+
+  /// The channel for playing interface sounds through.
+  final AudioChannel interfaceSoundsChannel;
+
+  /// The channel for playing music through.
+  final AudioChannel musicChannel;
 
   /// The levels stack.
   ///
@@ -28,49 +54,47 @@ class DecadeGame extends TitleMixin {
   ///
   /// You should not use this value directly unless you have to, but instead
   /// rely upon the [level] attribute.
-  final List<DecadeLevel> levels = [];
+  final List<Level> levels = [];
 
   /// Get the current level.
   ///
   /// This value will be `null` if no level has been pushed yet.
-  DecadeLevel? get level {
+  Level? get level {
     if (levels.isEmpty) {
       return null;
     }
     return levels.last;
   }
 
+  /// Whether or not to speak incoming keys.
+  bool helpMode = false;
+
+  /// Finish setting up the game.
+  @mustCallSuper
+  void setup() {}
+
   /// Output some text.
   ///
-  /// This method should be overridden depending on your application.
-  void output(
-
-          /// The text to output.
-          String text) =>
-      // ignore: avoid_print
-      print(text);
+  /// This method will speak [text] using [tts].
+  void output(String text, {Duration? when}) =>
+      Timer(when ?? Duration(milliseconds: 1), () => tts.output(text));
 
   /// Play a sound.
   ///
-  /// This method will be updated when the sound system has been written, and
-  /// should be overridden depending on your application.
-  void playSound(
-
-          /// The URL where the sound file resides.
-          String url) =>
-      // ignore: avoid_print
-      print('Play sound $url.');
+  ///This method uses the [interfaceSoundsChannel] to play [file].
+  void playSound(FileSystemEntity file) =>
+      interfaceSoundsChannel.playSound(file);
 
   /// Push a level onto the stack.
   ///
-  /// The new level will have its [DecadeLevel.onPush] method called.
+  /// The new level will have its [Level.onPush] method called.
   ///
   /// If the new level is covering a level already in the stack, then that
-  /// level will have its [DecadeLevel.onCover] method called.
+  /// level will have its [Level.onCover] method called.
   void pushLevel(
 
       /// The level which should be pushed onto the stack.
-      DecadeLevel level) {
+      Level level) {
     if (levels.isNotEmpty) {
       levels.last.onCover(level);
     }
@@ -80,10 +104,10 @@ class DecadeGame extends TitleMixin {
 
   /// Pop a level from the stack.
   ///
-  /// The level will have its [DecadeLevel.onPop] method called.
+  /// The level will have its [Level.onPop] method called.
   ///
   /// If there are levels remaining in the stack after popping, the next
-  /// current level will have its [DecadeLevel.onReveal] method called.
+  /// current level will have its [Level.onReveal] method called.
   void popLevel() {
     if (levels.isEmpty) {
       return null;
@@ -94,19 +118,40 @@ class DecadeGame extends TitleMixin {
     }
   }
 
-  /// Press a key combination.
+  /// Pop all levels.
+  void popAll() {
+    while (levels.isNotEmpty) {
+      popLevel();
+    }
+  }
+
+  /// Handle a pressed key combination.
   ///
   /// If [level is `null`, this method does nothing. Otherwise, the level's
-  /// [DecadeLevel.actions] are iterated over, and any which have the correct
-  /// hotkey have their [DecadeAction.start] method called.
-  void keyDown(RawKeyDownEvent event) => level?.keyDown(event);
+  /// [Level.actions] are iterated over, and any which have the correct
+  /// hotkey have their [actions.Action.start] method called.
+  void keyDown(RawKeyDownEvent event) {
+    for (final a in globalActions) {
+      if (a.hotkey.matches(event.data)) {
+        a.start();
+      }
+    }
+    level?.keyDown(event);
+  }
 
   /// Release a key combination.
   ///
   /// If [level is `null`, this method does nothing. Otherwise, the level's
-  /// [DecadeLevel.actions] are iterated over, and any which have the correct
-  /// hotkey have their [DecadeAction.stop] method called.
-  void keyUp(RawKeyUpEvent event) => level?.keyUp(event);
+  /// [Level.actions] are iterated over, and any which have the correct
+  /// hotkey have their [actions.Action.stop] method called.
+  void keyUp(RawKeyUpEvent event) {
+    for (final a in globalActions) {
+      if (a.hotkey.matches(event.data)) {
+        a.stop();
+      }
+    }
+    level?.keyUp(event);
+  }
 
   /// Handle any type of key.
   ///
@@ -114,6 +159,39 @@ class DecadeGame extends TitleMixin {
   ///
   /// If [event] is a [RawKeyUpEvent], then [keyUp] will be used.
   void handleKey(RawKeyEvent event) {
+    if (helpMode) {
+      if (event is RawKeyUpEvent) {
+        return;
+      }
+      final List<String> keys = [];
+      void getModifierSide(String name, ModifierKey modifier) {
+        final side = event.data.getModifierSide(modifier);
+        switch (side) {
+          case null:
+            break;
+          case KeyboardSide.any:
+            keys.add(name);
+            break;
+          case KeyboardSide.left:
+            keys.add('Left_$name');
+            break;
+          case KeyboardSide.right:
+            keys.add('Right_$name');
+            break;
+          case KeyboardSide.all:
+            keys.add('Both_$name');
+            break;
+        }
+      }
+
+      getModifierSide('Control', ModifierKey.controlModifier);
+      getModifierSide('Shift', ModifierKey.shiftModifier);
+      getModifierSide('Alt', ModifierKey.altModifier);
+      keys.add(event.physicalKey.debugName ??
+          'Logical+${event.logicalKey.keyLabel}');
+      output(keys.join('+'));
+      return;
+    }
     if (event is RawKeyDownEvent) {
       keyDown(event);
     } else if (event is RawKeyUpEvent) {
@@ -122,4 +200,16 @@ class DecadeGame extends TitleMixin {
       throw Exception('Invalid event: $event.');
     }
   }
+
+  /// Turn the music up a little.
+  void musicVolumeUp() => musicChannel.adjustGain(0.05);
+
+  /// Turn the music volume down a little.
+  void musicVolumeDown() => musicChannel.adjustGain(-0.05);
+
+  /// Turn interface sounds up a little bit.
+  void interfaceSoundsVolumeUp() => interfaceSoundsChannel.adjustGain(0.05);
+
+  /// Turn interface sounds down a little.
+  void interfaceSoundsVolumeDown() => interfaceSoundsChannel.adjustGain(-0.05);
 }

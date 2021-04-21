@@ -1,5 +1,6 @@
 name: decade
 description: An audio game engine written in Dart.
+publish_to: none
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -24,6 +25,8 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
+  dart_synthizer:
+    path: ../dart_synthizer
   dart_tolk: ^1.2.0
   flutter:
     sdk: flutter

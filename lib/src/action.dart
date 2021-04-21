@@ -11,11 +11,10 @@ import 'typedefs.dart';
 /// A class which represents a keyboard key.
 ///
 /// Instances of this class can be used to ensure only certain keys trigger an
-/// [DecadeAction].
-class DecadeHotkey {
+/// [Action].
+class Hotkey {
   /// Create a hotkey.
-  const DecadeHotkey(this.physicalKey,
-      {this.controlKey, this.altKey, this.shiftKey});
+  const Hotkey(this.physicalKey, {this.controlKey, this.altKey, this.shiftKey});
 
   /// The flutter key which defines this hotkey.
   final PhysicalKeyboardKey physicalKey;
@@ -108,11 +107,11 @@ class DecadeHotkey {
 
 /// An action which can be called.
 ///
-/// Actions can be triggered by the inclusion of a [DecadeHotkey], and can be
-/// given an [DecadeAction.interval], to ensure they run on a schedule.
-class DecadeAction extends TitleMixin {
+/// Actions can be triggered by the inclusion of a [Hotkey], and can be
+/// given an [Action.interval], to ensure they run on a schedule.
+class Action extends TitleMixin {
   /// Create an action.
-  DecadeAction(this.title, this.hotkey,
+  Action(this.title, this.hotkey,
       {this.triggerFunc, this.spamFunc, this.stopFunc, this.interval});
 
   /// The title of this action.
@@ -120,19 +119,19 @@ class DecadeAction extends TitleMixin {
   final String title;
 
   /// The hotkey which must be used to trigger this action.
-  final DecadeHotkey hotkey;
+  final Hotkey hotkey;
 
   /// The function which will be called when this action is triggered or
   /// started.
-  final DecadeActionCallback? triggerFunc;
+  final ActionCallback? triggerFunc;
 
   /// The function which will be called when spamming this command.
   ///
   /// For this function to mean something, [interval] must not be `null`.
-  final DecadeActionCallback? spamFunc;
+  final ActionCallback? spamFunc;
 
   /// The function which will be called when this action is stopped.
-  final DecadeActionCallback? stopFunc;
+  final ActionCallback? stopFunc;
 
   /// The interval between action runs.
   ///
@@ -210,4 +209,8 @@ class DecadeAction extends TitleMixin {
       _hasRun = false;
     }
   }
+
+  /// Return a string representation of this object.
+  @override
+  String toString() => '$title: $hotkey';
 }

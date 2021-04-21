@@ -1,19 +1,20 @@
-/// Provides the [DecadeActionsMenu] class.
+/// Provides the [ActionsMenu] class.
 import '../../decade.dart';
 import '../game.dart';
 import 'menu.dart';
 
 /// An action menu.
-class DecadeActionsMenu extends DecadeMenu {
+///
+/// This class can be thought of as a help menu.
+class ActionsMenu extends Menu {
   /// Create an actions menu.
-  DecadeActionsMenu(DecadeGame game, DecadeLevel level,
-      {String title = 'Actions'})
+  ActionsMenu(Game game, Level level, {String title = 'Actions'})
       : super(
             game,
             title,
             level.actions
-                .map<DecadeMenuItem>((DecadeAction action) =>
-                    DecadeMenuItem(func: action.run, title: action.title))
+                .map<MenuItem>((Action action) =>
+                    MenuItem(func: action.run, title: action.title))
                 .toList());
 
   /// This menu has been pushed, show the title.

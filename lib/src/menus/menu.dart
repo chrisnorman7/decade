@@ -1,22 +1,25 @@
-/// Provides the [DecadeMenu] class.
+/// Provides the [Menu] class.
 library menu;
 
+import 'dart:io';
 import 'dart:math';
 
+import 'package:flutter/services.dart';
+
+import '../../decade.dart';
 import '../game.dart';
 import '../level.dart';
 import '../typedefs.dart';
 
 /// An item in a menu.
-class DecadeMenuItem {
+class MenuItem {
   /// Create a menu item.
-  const DecadeMenuItem(
-      {this.func, this.title, this.selectSoundUrl, this.activateSoundUrl});
+  const MenuItem({this.func, this.title, this.selectSound, this.activateSound});
 
   /// The function which will be called when this item is selected.
   ///
   /// If this value is `null`, it will be impossible to activate this item.
-  final DecadeActionCallback? func;
+  final ActionCallback? func;
 
   /// The title of this item.
   ///
@@ -28,19 +31,24 @@ class DecadeMenuItem {
   ///
   /// If this value is `null`, no sound will be played when this menu item is
   /// selected.
-  final String? selectSoundUrl;
+  final FileSystemEntity? selectSound;
 
   /// The sound which will be played when this item is activated.
   ///
   /// If this value is `null`, no sound will be played when this item is
   /// activated.
-  final String? activateSoundUrl;
+  final FileSystemEntity? activateSound;
 }
 
-/// A menu which holds a list of [DecadeMenuItem] instances.
-class DecadeMenu extends DecadeLevel {
+/// A menu which holds a list of [MenuItem] instances.
+class Menu extends Level {
   /// Create a menu instance.
-  DecadeMenu(DecadeGame game, String title, this.items) : super(game, title);
+  Menu(Game game, String title, this.items,
+      {this.selectSound,
+      this.activateSound,
+      this.cancelMessage,
+      this.cancelSound})
+      : super(game, title, <Action>[]);
 
   /// The current position in this menu.
   ///
@@ -49,12 +57,12 @@ class DecadeMenu extends DecadeLevel {
   int? position;
 
   /// All the items for this menu.
-  final List<DecadeMenuItem> items;
+  final List<MenuItem> items;
 
   /// Get the current item.
   ///
   /// If this value is `null`, then the title of this menu should be shown.
-  DecadeMenuItem? get currentItem {
+  MenuItem? get currentItem {
     final pos = position;
     if (pos == null || pos >= items.length) {
       return null;
@@ -62,16 +70,46 @@ class DecadeMenu extends DecadeLevel {
     return items[pos];
   }
 
+  /// The sound which should be played when selecting an item.
+  ///
+  /// This sound can be overridden by [MenuItem.selectSound].
+  final FileSystemEntity? selectSound;
+
+  /// The sound that will be played when activating an item.
+  ///
+  /// This sound can be overridden by [MenuItem.activateSound].
+  final FileSystemEntity? activateSound;
+
+  /// The message that will be shown when [cancel] is called.
+  final String? cancelMessage;
+
+  /// The sound that will be played when [cancel] is called.
+  final FileSystemEntity? cancelSound;
+
+  /// Finish setting up this menu.
+  @override
+  void setup() {
+    super.setup();
+    actions.addAll(<Action>[
+      Action('Move up', Hotkey(PhysicalKeyboardKey.keyW), triggerFunc: moveUp),
+      Action('Move down', Hotkey(PhysicalKeyboardKey.keyS),
+          triggerFunc: moveDown),
+      Action('Activate a menu item', Hotkey(PhysicalKeyboardKey.keyD),
+          triggerFunc: activateItem),
+      Action('Cancel', Hotkey(PhysicalKeyboardKey.keyA), triggerFunc: cancel)
+    ]);
+  }
+
   /// Show the current item.
   ///
   /// If [position] is `null`, the title of the menu will be shown. Otherwise,
   /// the title of the newly-selected item will be shown.
   ///
-  /// If the newly-selected item has a non-null [DecadeMenuItem.selectSoundUrl]
-  /// attribute, that URL will be played with the [DecadeGame.playSound] method.
+  /// If the newly-selected item has a non-null [MenuItem.selectSound]
+  /// attribute, that URL will be played with the [Game.playSound] method.
   ///
   /// If [item] is `null`, [currentItem] will be used.
-  void showItem({DecadeMenuItem? item}) {
+  void showItem({MenuItem? item}) {
     item ??= currentItem;
     if (item == null) {
       return game.output(title);
@@ -80,9 +118,9 @@ class DecadeMenu extends DecadeLevel {
     if (itemTitle != null) {
       game.output(itemTitle);
     }
-    final selectSoundUrl = item.selectSoundUrl;
-    if (selectSoundUrl != null) {
-      game.playSound(selectSoundUrl);
+    final sound = item.selectSound ?? selectSound;
+    if (sound != null) {
+      game.playSound(sound);
     }
   }
 
@@ -115,17 +153,35 @@ class DecadeMenu extends DecadeLevel {
   /// Activate a menu item.
   ///
   /// If [item] is `null`, the current item will be used.
-  void activateItem({DecadeMenuItem? item}) {
+  void activateItem({MenuItem? item}) {
     item ??= currentItem;
     if (item != null) {
-      final activateSound = item.activateSoundUrl;
-      if (activateSound != null) {
-        game.playSound(activateSound);
+      final sound = item.activateSound ?? activateSound;
+      if (sound != null) {
+        game.playSound(sound);
       }
       final f = item.func;
       if (f != null) {
         f();
       }
     }
+  }
+
+  /// Show the title of this menu.
+  @override
+  void onPush() => showItem();
+
+  /// Cancel this menu, and say something.
+  @override
+  void cancel() {
+    final message = cancelMessage;
+    if (message != null) {
+      game.output(message);
+    }
+    final sound = cancelSound;
+    if (sound != null) {
+      game.playSound(sound);
+    }
+    super.cancel();
   }
 }

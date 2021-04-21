@@ -3,5 +3,5 @@ library typedefs;
 
 import 'action.dart';
 
-/// The callback type for [DecadeAction] functions.
-typedef DecadeActionCallback = Function();
+/// The callback type for [Action] functions.
+typedef ActionCallback = void Function();
