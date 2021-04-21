@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:dart_synthizer/dart_synthizer.dart';
 import 'package:dart_tolk/dart_tolk.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'decade.dart' as decade;
 
@@ -64,14 +65,7 @@ class _GameWidgetState extends State<GameWidget> {
       game.musicChannel
           .loadFile(File('sounds/music/main_theme.wav'), stream: true)
             ..generator.looping = true;
-      Future<void>.delayed(Duration(seconds: 1)).then((value) {
-        final g = _game;
-        if (g == null) {
-          throw Exception('Game has vanished.');
-        } else {
-          g.pushLevel(MainMenu(g));
-        }
-      });
+      game.pushLevel(MainMenu(game));
       _game = game;
       _game = game;
     }
@@ -117,7 +111,29 @@ class MainMenu extends decade.Menu {
                             Directory('sounds/footsteps/dirt')),
                         {},
                         Point<int>(0, 0),
-                        Point<int>(100, 100));
+                        Point<int>(100, 100),
+                        actions: [
+                          decade.Action('Return to main menu',
+                              decade.Hotkey(PhysicalKeyboardKey.escape),
+                              triggerFunc: () {
+                            final m = decade.Menu(
+                                game, 'Are you sure you want to quit?', [
+                              decade.MenuItem(
+                                  title: 'Yes',
+                                  func: () {
+                                    game..popLevel()..popLevel();
+                                  }),
+                              decade.MenuItem(
+                                  title: 'No',
+                                  func: () {
+                                    game
+                                      ..popLevel()
+                                      ..output('Cancelled.');
+                                  })
+                            ]);
+                            game.pushLevel(m);
+                          })
+                        ]);
                     game.pushLevel(zone);
                   }),
               decade.MenuItem(
@@ -134,4 +150,11 @@ class MainMenu extends decade.Menu {
                   })
             ],
             selectSound: File('sounds/interface/beep.wav'));
+
+  /// Reset focus.
+  @override
+  void onCover(decade.Level by) {
+    super.onCover(by);
+    position = null;
+  }
 }

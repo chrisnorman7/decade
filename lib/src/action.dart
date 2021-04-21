@@ -35,9 +35,12 @@ class Hotkey {
       (actual != null && expected == KeyboardSide.any);
 
   /// Returns `true` if [eventData] matches this hotkey.
-  bool matches(RawKeyEventData eventData) {
+  bool matches(RawKeyEventData eventData, {bool includeModifiers = true}) {
     if (eventData.physicalKey != physicalKey) {
       return false;
+    }
+    if (includeModifiers == false) {
+      return true;
     }
     // Now check modifiers.
     return _matchModifier(controlKey,

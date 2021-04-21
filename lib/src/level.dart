@@ -33,6 +33,10 @@ class Level extends TitleMixin {
   List<decadeActions.Action> get runningActions =>
       actions.where((element) => element.running == true).toList();
 
+  /// Stop all running actions.
+  void clearRunningActions() =>
+      runningActions.forEach((element) => element.stop());
+
   /// Whether or not the [cancel] method can be used on this instance.
   final bool cancellable;
 
@@ -46,20 +50,16 @@ class Level extends TitleMixin {
   /// This level has been popped from the level stack.
   void onPop() {}
 
-  /// This level has been covered.
-  void onCover(
+  /// This level has been covered by [by].
+  ///
+  /// This method calls the [clearRunningActions] method.
+  void onCover(Level by) => clearRunningActions();
 
-      /// The level which has covered this level.
-      Level by) {}
-
-  /// This level has been revealed.
+  /// This level has been revealed by [by].
   ///
   /// This method is called when [Game.popLevel] is used, and there is a
   /// [Level] instance remaining on the stack after popping.
-  void onReveal(
-
-      /// The level which was popped, thus revealing this level.
-      Level by) {}
+  void onReveal(Level by) {}
 
   /// Handle a key being pressed.
   void keyDown(RawKeyDownEvent event) {
@@ -73,7 +73,7 @@ class Level extends TitleMixin {
   /// Handle a key being released.
   void keyUp(RawKeyUpEvent event) {
     for (final a in runningActions) {
-      if (a.hotkey.matches(event.data)) {
+      if (a.hotkey.matches(event.data, includeModifiers: false)) {
         a.stop();
       }
     }

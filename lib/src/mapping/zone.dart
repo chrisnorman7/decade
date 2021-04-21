@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import '../action.dart';
 import '../game.dart';
 import '../level.dart';
-import '../menus/menu.dart';
 import 'terrain.dart';
 
 /// The directions it is possible to move in, in a top-down map.
@@ -29,9 +28,9 @@ class Zone extends Level {
   /// Create a zone.
   Zone(Game game, String title, this.defaultTerrain, this.terrains, this.start,
       this.end,
-      {Point<int>? coords})
+      {Point<int>? coords, List<Action>? actions})
       : coordinates = coords ?? start,
-        super(game, title, <Action>[]);
+        super(game, title, actions ?? <Action>[]);
 
   /// The lowest coordinates on the map.
   final Point<int> start;
@@ -67,18 +66,6 @@ class Zone extends Level {
           interval: Duration(milliseconds: 500)),
       Action('Show coordinates', Hotkey(PhysicalKeyboardKey.keyC),
           triggerFunc: () => game.output('${coordinates.x}, ${coordinates.y}')),
-      Action('Return to main menu', Hotkey(PhysicalKeyboardKey.escape),
-          triggerFunc: () {
-        final m = Menu(game, 'Are you sure you want to quit?', [
-          MenuItem(
-              title: 'Yes',
-              func: () {
-                game..popLevel()..popLevel();
-              }),
-          MenuItem(title: 'No', func: game.popLevel)
-        ]);
-        game.pushLevel(m);
-      })
     ]);
   }
 

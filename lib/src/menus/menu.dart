@@ -167,9 +167,16 @@ class Menu extends Level {
     }
   }
 
-  /// Show the title of this menu.
+  /// This menu has been pushed. Show the title.
   @override
   void onPush() => showItem();
+
+  /// This menu has been revealed. Show the title.
+  @override
+  void onReveal(Level by) {
+    super.onReveal(by);
+    showItem();
+  }
 
   /// Cancel this menu, and say something.
   @override
