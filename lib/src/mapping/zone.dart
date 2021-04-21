@@ -1,4 +1,5 @@
 /// Provides the [Zone] class.
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/services.dart';
@@ -26,11 +27,18 @@ enum MoveDirections {
 /// A game map.
 class Zone extends Level {
   /// Create a zone.
-  Zone(Game game, String title, this.defaultTerrain, this.terrains, this.start,
-      this.end,
-      {Point<int>? coords, List<Action>? actions})
-      : coordinates = coords ?? start,
-        super(game, title, actions ?? <Action>[]);
+  Zone(Game game, String title, this.defaultTerrain,
+      {List<FileSystemEntity>? music,
+      Map<Point<int>, Terrain>? terrainList,
+      Point<int>? startCoordinates,
+      Point<int>? endCoordinates,
+      Point<int>? coords,
+      List<Action>? actions})
+      : terrains = terrainList ?? {},
+        start = startCoordinates ?? Point<int>(0, 0),
+        end = endCoordinates ?? Point<int>(100, 100),
+        coordinates = coords ?? Point<int>(0, 0),
+        super(game, title, actionList: actions, music: music);
 
   /// The lowest coordinates on the map.
   final Point<int> start;

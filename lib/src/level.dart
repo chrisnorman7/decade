@@ -1,19 +1,28 @@
 /// Provides the [Level] class.
 library level;
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'action.dart' as decadeActions;
 import 'game.dart';
 import 'mixins.dart';
+import 'sound/sound.dart';
 
 /// This class represents a level in a game.
 ///
 /// Actions can be bound to levels to provide functionality.
 class Level extends TitleMixin {
   /// Create a level.
-  Level(this.game, this.title, this.actions, {this.cancellable = false}) {
+  Level(this.game, this.title,
+      {List<decadeActions.Action>? actionList,
+      this.cancellable = false,
+      List<FileSystemEntity>? music})
+      : actions = actionList ?? <decadeActions.Action>[],
+        musicFiles = music ?? <FileSystemEntity>[],
+        musicObjects = <Sound>[] {
     setup();
   }
 
@@ -40,15 +49,33 @@ class Level extends TitleMixin {
   /// Whether or not the [cancel] method can be used on this instance.
   final bool cancellable;
 
+  /// A list of files which should be played as music on this level.
+  final List<FileSystemEntity> musicFiles;
+
+  /// All the music objects that are playing.
+  final List<Sound> musicObjects;
+
   /// Finish setting up this level.
   @mustCallSuper
   void setup() {}
 
   /// This level has been pushed.
-  void onPush() {}
+  @mustCallSuper
+  void onPush() {
+    musicFiles.forEach((element) {
+      musicObjects.add(game.musicChannel.loadFile(element, stream: true)
+        ..generator.looping = true);
+    });
+  }
 
   /// This level has been popped from the level stack.
-  void onPop() {}
+  void onPop() {
+    musicObjects
+      ..forEach((element) {
+        element.destroy();
+      })
+      ..clear();
+  }
 
   /// This level has been covered by [by].
   ///

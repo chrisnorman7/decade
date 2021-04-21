@@ -44,11 +44,12 @@ class MenuItem {
 class Menu extends Level {
   /// Create a menu instance.
   Menu(Game game, String title, this.items,
-      {this.selectSound,
+      {List<FileSystemEntity>? music,
+      this.selectSound,
       this.activateSound,
       this.cancelMessage,
       this.cancelSound})
-      : super(game, title, <Action>[]);
+      : super(game, title, music: music);
 
   /// The current position in this menu.
   ///
@@ -169,7 +170,10 @@ class Menu extends Level {
 
   /// This menu has been pushed. Show the title.
   @override
-  void onPush() => showItem();
+  void onPush() {
+    super.onPush();
+    showItem();
+  }
 
   /// This menu has been revealed. Show the title.
   @override
