@@ -8,7 +8,7 @@ import 'package:dart_tolk/dart_tolk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'action.dart' as actions;
+import 'action.dart' as decadeActions;
 import 'level.dart';
 import 'mixins.dart';
 import 'sound/audio_channel.dart';
@@ -22,8 +22,10 @@ import 'sound/audio_factory.dart';
 /// sounds with [Game.playSound].
 class Game implements TitleMixin {
   /// Create a new game.
-  Game(this.title, this.tts, this.audioFactory, this.globalActions)
-      : interfaceSoundsChannel = audioFactory.createUnpannedChannel(),
+  Game(this.title, this.tts, this.audioFactory,
+      {List<decadeActions.Action>? actions})
+      : globalActions = actions ?? <decadeActions.Action>[],
+        interfaceSoundsChannel = audioFactory.createUnpannedChannel(),
         musicChannel = audioFactory.createUnpannedChannel() {
     setup();
   }
@@ -39,7 +41,7 @@ class Game implements TitleMixin {
   final AudioFactory audioFactory;
 
   /// Global actions that can be triggered, regardless of pushed level.
-  final List<actions.Action> globalActions;
+  final List<decadeActions.Action> globalActions;
 
   /// The channel for playing interface sounds through.
   final AudioChannel interfaceSoundsChannel;
