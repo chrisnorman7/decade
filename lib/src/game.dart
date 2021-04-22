@@ -87,21 +87,41 @@ class Game implements TitleMixin {
   void playSound(FileSystemEntity file) =>
       interfaceSoundsChannel.playSound(file);
 
+  /// Actually push a level.
+  void _pushLevel(Level level) {
+    if (levels.isNotEmpty) {
+      levels.last.onCover(level);
+    }
+    level.onPush();
+    levels.add(level);
+  }
+
   /// Push a level onto the stack.
   ///
   /// The new level will have its [Level.onPush] method called.
   ///
   /// If the new level is covering a level already in the stack, then that
   /// level will have its [Level.onCover] method called.
-  void pushLevel(
-
-      /// The level which should be pushed onto the stack.
-      Level level) {
-    if (levels.isNotEmpty) {
-      levels.last.onCover(level);
+  ///
+  /// If [when] is not `null`, then a timer will start to push [level] after
+  /// [when] has elapsed.
+  void pushLevel(Level level, {Duration? when}) {
+    if (when == null) {
+      _pushLevel(level);
+    } else {
+      Timer(when, () => _pushLevel(level));
     }
-    level.onPush();
-    levels.add(level);
+  }
+
+  /// Actually pop a level.
+  void _popLevel() {
+    if (levels.isEmpty) {
+      return null;
+    }
+    final old = levels.removeLast()..onPop();
+    if (levels.isNotEmpty) {
+      levels.last.onReveal(old);
+    }
   }
 
   /// Pop a level from the stack.
@@ -110,13 +130,14 @@ class Game implements TitleMixin {
   ///
   /// If there are levels remaining in the stack after popping, the next
   /// current level will have its [Level.onReveal] method called.
-  void popLevel() {
-    if (levels.isEmpty) {
-      return null;
-    }
-    final old = levels.removeLast()..onPop();
-    if (levels.isNotEmpty) {
-      levels.last.onReveal(old);
+  ///
+  /// If [when] is not `null`, set a timer that will push [level] after [when]
+  /// has elapsed.
+  void popLevel({Duration? when}) {
+    if (when == null) {
+      _popLevel();
+    } else {
+      Timer(when, _popLevel);
     }
   }
 

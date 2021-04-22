@@ -2,11 +2,14 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:dart_synthizer/dart_synthizer.dart';
 import 'package:flutter/services.dart';
 
 import '../action.dart';
 import '../game.dart';
 import '../level.dart';
+import '../sound/audio_channel.dart';
+import '../sound/sound.dart';
 import 'terrain.dart';
 
 /// The directions it is possible to move in, in a top-down map.
@@ -35,6 +38,8 @@ class Zone extends Level {
       Point<int>? coords,
       List<Action>? actions})
       : terrains = terrainList ?? {},
+        terrainChannels = {},
+        terrainAmbiances = {},
         start = startCoordinates ?? Point<int>(0, 0),
         end = endCoordinates ?? Point<int>(100, 100),
         coordinates = coords ?? Point<int>(0, 0),
@@ -50,10 +55,19 @@ class Zone extends Level {
   Point<int> coordinates;
 
   /// All the terrains on this zone.
-  final Map<Point, Terrain> terrains;
+  final Map<Point<int>, Terrain> terrains;
+
+  /// The channels for playing terrain ambiances.
+  final Map<Point<int>, AudioChannel> terrainChannels;
+
+  /// All the playing terrain ambiances.
+  final Map<Point<int>, Sound> terrainAmbiances;
 
   /// The default terrain when moving on this map.
   final Terrain defaultTerrain;
+
+  /// Get the current terrain.
+  Terrain get terrain => terrains[coordinates] ?? defaultTerrain;
 
   /// Add walking commands.
   @override
@@ -75,7 +89,42 @@ class Zone extends Level {
       Action('Show coordinates', Hotkey(PhysicalKeyboardKey.keyC),
           triggerFunc: () => game.output('${coordinates.x}, ${coordinates.y}')),
     ]);
+    startTerrains();
   }
+
+  /// This terrain has been popped, call [stopTerrains].
+  @override
+  void onPop() {
+    super.onPop();
+    stopTerrains();
+  }
+
+  /// Start a terrain ambiance.
+  void startTerrain(Terrain terrain, Point<int> coords) {
+    final ambiance = terrain.ambiance;
+    final c = game.audioFactory.createThreeDChannel()
+      ..position = Double3(coords.x.toDouble(), coords.y.toDouble(), 0.0)
+      ..gain = terrain.ambianceGain;
+    if (ambiance != null) {
+      terrainAmbiances[coords] = c.loadFile(ambiance)..generator.looping = true;
+      terrainChannels[coords] = c;
+    }
+  }
+
+  /// Start all ambiance terrains playing.
+  void startTerrains() =>
+      terrains.forEach((key, value) => startTerrain(value, key));
+
+  /// Stop a terrain from playing its ambiance.
+  void stopTerrain(Terrain terrain, Point<int> coords) {
+    if (terrain.ambiance != null) {
+      terrainAmbiances.remove(coords);
+    }
+  }
+
+  /// Stop all terrain ambiances playing.
+  void stopTerrains() =>
+      terrains.forEach((key, value) => stopTerrain(value, key));
 
   /// Move in a direction.
   void move(MoveDirections direction) {

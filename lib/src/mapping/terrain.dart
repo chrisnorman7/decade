@@ -9,7 +9,8 @@ import 'zone.dart';
 /// This class can be thought of as a tile on a map.
 class Terrain {
   /// Create some terrain.
-  Terrain(this.factory, this.footstepSound, {this.ambiance});
+  Terrain(this.factory, this.footstepSound,
+      {this.ambiance, this.ambianceGain = 0.5});
 
   /// The audio factory used by this terrain.
   final AudioFactory factory;
@@ -19,6 +20,9 @@ class Terrain {
 
   /// The sound which denotes this terrain on the map.
   final FileSystemEntity? ambiance;
+
+  /// The gain of [ambiance].
+  final double ambianceGain;
 
   /// The method which is called when entering this terrain.
   void onEnter() {}

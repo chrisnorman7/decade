@@ -138,17 +138,20 @@ abstract class AudioChannel {
   ///
   /// At present, exactly 1 reverb can be added per channel.
   GlobalFdnReverb connectReverb(
-      {double sendLevel = 1.0,
+      {GlobalFdnReverb? reverbObject,
+      double sendLevel = 1.0,
       double fadeTime = 0.01,
       BiquadConfig? sendFilter}) {
     if (_reverb != null) {
       throw Exception('Only 1 reverb per channel.');
     }
-    final r = factory.ctx.createGlobalFdnReverb();
-    factory.ctx.ConfigRoute(source, r,
+    if (reverbObject == null) {
+      reverbObject = factory.ctx.createGlobalFdnReverb();
+    }
+    factory.ctx.ConfigRoute(source, reverbObject,
         gain: sendLevel, fadeTime: fadeTime, filter: sendFilter);
-    _reverb = r;
-    return r;
+    _reverb = reverbObject;
+    return reverbObject;
   }
 
   /// Disconnect [reverb].
@@ -179,17 +182,20 @@ abstract class AudioChannel {
   ///
   /// At this time, exactly 1 echo can be added to a channel.
   GlobalEcho connectEcho(
-      {double sendLevel = 1.0,
+      {GlobalEcho? echoObject,
+      double sendLevel = 1.0,
       double fadeTime = 0.01,
       BiquadConfig? sendFilter}) {
     if (echo == null) {
       throw Exception('Only 1 echo can be added to a channel.');
     }
-    final e = factory.ctx.createGlobalEcho();
-    factory.ctx.ConfigRoute(source, e,
+    if (echoObject == null) {
+      echoObject = factory.ctx.createGlobalEcho();
+    }
+    factory.ctx.ConfigRoute(source, echoObject,
         gain: sendLevel, fadeTime: fadeTime, filter: sendFilter);
-    _echo = e;
-    return e;
+    _echo = echoObject;
+    return echoObject;
   }
 
   /// Disconnect [echo].
