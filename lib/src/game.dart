@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 
 import 'action.dart' as decadeActions;
 import 'level.dart';
+import 'level_widget.dart';
 import 'mixins.dart';
 import 'sound/audio_channel.dart';
 import 'sound/audio_factory.dart';
@@ -235,4 +236,16 @@ class Game implements TitleMixin {
 
   /// Turn interface sounds down a little.
   void interfaceSoundsVolumeDown() => interfaceSoundsChannel.adjustGain(-0.05);
+
+  /// Push a level with an attached widget.
+  ///
+  /// This method first pushes [newLevel], then creates an instance of
+  /// [LevelWidget], and pushes that using the `push` method of [navigator].
+  void pushWidget(NavigatorState navigator, Level newLevel) {
+    pushLevel(newLevel);
+    navigator.push<LevelWidget>(MaterialPageRoute(
+        builder: (BuildContext context) => LevelWidget(
+              newLevel,
+            )));
+  }
 }

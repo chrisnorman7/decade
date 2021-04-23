@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 
 import 'action.dart' as decadeActions;
 import 'game.dart';
+import 'level_widget.dart';
 import 'mixins.dart';
 import 'sound/sound.dart';
 
@@ -115,4 +116,7 @@ class Level extends TitleMixin {
       game.popLevel();
     }
   }
+
+  /// A method to enable [LevelWidget] to perform asynchronous processing.
+  Future<void> load(State state) async {}
 }
