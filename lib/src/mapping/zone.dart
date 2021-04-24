@@ -158,8 +158,12 @@ class Zone<TT> extends Level {
     }
     final p = coordinates + difference;
     if (p.x >= start.x && p.x <= end.x && p.y >= start.y && p.y <= end.y) {
+      final oldTerrain = terrain;
       coordinates = p;
-      final terrain = terrains[p] ?? defaultTerrain;
+      final newTerrain = terrain;
+      if (newTerrain != oldTerrain) {
+        newTerrain.onEnter();
+      }
       game
         ..interfaceSoundsChannel.playSound(terrain.footstepSound)
         ..audioFactory.ctx.position =
