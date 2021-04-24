@@ -173,7 +173,7 @@ class Zone<TT extends Terrain<DT>, DT> extends Level {
         newTerrain.onEnter();
       }
       game
-        ..interfaceSoundsChannel.playSound(terrain.footstepSound)
+        ..interfaceSoundsChannel.playSound(newTerrain.footstepSound)
         ..audioFactory.ctx.position =
             Double3(p.x.toDouble(), p.y.toDouble(), 0);
     }
