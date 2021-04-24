@@ -48,8 +48,9 @@ class Menu extends Level {
       this.selectSound,
       this.activateSound,
       this.cancelMessage,
-      this.cancelSound})
-      : super(game, title, music: music);
+      this.cancelSound,
+      bool canBeCancelled = false})
+      : super(game, title, music: music, cancellable: canBeCancelled);
 
   /// The current position in this menu.
   ///
