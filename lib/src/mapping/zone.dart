@@ -28,11 +28,11 @@ enum MoveDirections {
 }
 
 /// A game map.
-class Zone extends Level {
+class Zone<TT> extends Level {
   /// Create a zone.
   Zone(Game game, String title, this.defaultTerrain,
       {List<FileSystemEntity>? music,
-      Map<Point<int>, Terrain>? terrainList,
+      Map<Point<int>, Terrain<TT>>? terrainList,
       Point<int>? startCoordinates,
       Point<int>? endCoordinates,
       Point<int>? coords,
@@ -55,7 +55,7 @@ class Zone extends Level {
   Point<int> coordinates;
 
   /// All the terrains on this zone.
-  final Map<Point<int>, Terrain> terrains;
+  final Map<Point<int>, Terrain<TT>> terrains;
 
   /// The channels for playing terrain ambiances.
   final Map<Point<int>, AudioChannel> terrainChannels;
@@ -64,10 +64,10 @@ class Zone extends Level {
   final Map<Point<int>, Sound> terrainAmbiances;
 
   /// The default terrain when moving on this map.
-  final Terrain defaultTerrain;
+  final Terrain<TT> defaultTerrain;
 
   /// Get the current terrain.
-  Terrain get terrain => terrains[coordinates] ?? defaultTerrain;
+  Terrain<TT> get terrain => terrains[coordinates] ?? defaultTerrain;
 
   /// Add walking commands.
   @override
@@ -100,7 +100,7 @@ class Zone extends Level {
   }
 
   /// Add a new terrain to the [terrains] map.
-  void addTerrain(Terrain t, Point<int> coords) {
+  void addTerrain(Terrain<TT> t, Point<int> coords) {
     terrains[coords] = t;
     startTerrain(t, coords);
   }
