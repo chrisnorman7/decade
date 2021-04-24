@@ -8,6 +8,7 @@ library decade;
 export 'src/action.dart';
 export 'src/game.dart';
 export 'src/level.dart';
+export 'src/level_widget.dart';
 export 'src/mapping/terrain.dart';
 export 'src/mapping/zone.dart';
 export 'src/menus/actions_menu.dart';
