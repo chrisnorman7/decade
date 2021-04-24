@@ -160,7 +160,10 @@ class Zone<TT> extends Level {
     if (p.x >= start.x && p.x <= end.x && p.y >= start.y && p.y <= end.y) {
       coordinates = p;
       final terrain = terrains[p] ?? defaultTerrain;
-      game.interfaceSoundsChannel.playSound(terrain.footstepSound);
+      game
+        ..interfaceSoundsChannel.playSound(terrain.footstepSound)
+        ..audioFactory.ctx.position =
+            Double3(p.x.toDouble(), p.y.toDouble(), 0);
     }
   }
 }
