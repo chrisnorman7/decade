@@ -28,11 +28,11 @@ enum MoveDirections {
 }
 
 /// A game map.
-class Zone<TT> extends Level {
+class Zone<TT extends Terrain<DT>, DT> extends Level {
   /// Create a zone.
   Zone(Game game, String title, this.defaultTerrain,
       {List<FileSystemEntity>? music,
-      Map<Point<int>, Terrain<TT>>? terrainList,
+      Map<Point<int>, TT>? terrainList,
       Point<int>? startCoordinates,
       Point<int>? endCoordinates,
       Point<int>? coords,
@@ -43,10 +43,7 @@ class Zone<TT> extends Level {
         start = startCoordinates ?? Point<int>(0, 0),
         end = endCoordinates ?? Point<int>(100, 100),
         coordinates = coords ?? Point<int>(0, 0),
-        super(game, title, actionList: actions, music: music) {
-    game.audioFactory.ctx.position =
-        Double3(coordinates.x.toDouble(), coordinates.y.toDouble(), 0.0);
-  }
+        super(game, title, actionList: actions, music: music);
 
   /// The lowest coordinates on the map.
   final Point<int> start;
@@ -58,7 +55,7 @@ class Zone<TT> extends Level {
   Point<int> coordinates;
 
   /// All the terrains on this zone.
-  final Map<Point<int>, Terrain<TT>> terrains;
+  final Map<Point<int>, TT> terrains;
 
   /// The channels for playing terrain ambiances.
   final Map<Point<int>, AudioChannel> terrainChannels;
@@ -67,10 +64,10 @@ class Zone<TT> extends Level {
   final Map<Point<int>, Sound> terrainAmbiances;
 
   /// The default terrain when moving on this map.
-  final Terrain<TT> defaultTerrain;
+  final TT defaultTerrain;
 
   /// Get the current terrain.
-  Terrain<TT> get terrain => terrains[coordinates] ?? defaultTerrain;
+  TT get terrain => terrains[coordinates] ?? defaultTerrain;
 
   /// Add walking commands.
   @override
@@ -99,6 +96,8 @@ class Zone<TT> extends Level {
   void onPush() {
     super.onPush();
     startTerrains();
+    game.audioFactory.ctx.position =
+        Double3(coordinates.x.toDouble(), coordinates.y.toDouble(), 0.0);
   }
 
   /// This terrain has been popped, call [stopTerrains].
@@ -109,13 +108,13 @@ class Zone<TT> extends Level {
   }
 
   /// Add a new terrain to the [terrains] map.
-  void addTerrain(Terrain<TT> t, Point<int> coords) {
+  void addTerrain(TT t, Point<int> coords) {
     terrains[coords] = t;
     startTerrain(t, coords);
   }
 
   /// Start a terrain ambiance.
-  void startTerrain(Terrain t, Point<int> coords) {
+  void startTerrain(TT t, Point<int> coords) {
     final ambiance = t.ambiance;
     final c = game.audioFactory.createThreeDChannel()
       ..position = Double3(coords.x.toDouble(), coords.y.toDouble(), 0.0)
@@ -131,13 +130,13 @@ class Zone<TT> extends Level {
       terrains.forEach((key, value) => startTerrain(value, key));
 
   /// Remove a terrain from the [terrains] map.
-  void removeTerrain(Terrain t, Point<int> coords) {
+  void removeTerrain(TT t, Point<int> coords) {
     stopTerrain(t, coords);
     terrains.remove(coords);
   }
 
   /// Stop a terrain from playing its ambiance.
-  void stopTerrain(Terrain t, Point<int> coords) {
+  void stopTerrain(TT t, Point<int> coords) {
     final a = terrainAmbiances.remove(coords);
     if (a != null) {
       a.channel.destroySound(a);
