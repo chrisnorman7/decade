@@ -88,6 +88,8 @@ class Zone<TT extends Terrain<DT>, DT> extends Level {
           interval: Duration(milliseconds: 500)),
       Action('Show coordinates', Hotkey(PhysicalKeyboardKey.keyC),
           triggerFunc: () => game.output('${coordinates.x}, ${coordinates.y}')),
+      Action('Activate terrain', Hotkey(PhysicalKeyboardKey.enter),
+          triggerFunc: activate)
     ]);
   }
 
@@ -178,4 +180,7 @@ class Zone<TT extends Terrain<DT>, DT> extends Level {
             Double3(p.x.toDouble(), p.y.toDouble(), 0);
     }
   }
+
+  /// Activate the current terrain.
+  void activate() => terrain.onActivate();
 }
