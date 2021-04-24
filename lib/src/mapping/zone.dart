@@ -43,7 +43,10 @@ class Zone<TT> extends Level {
         start = startCoordinates ?? Point<int>(0, 0),
         end = endCoordinates ?? Point<int>(100, 100),
         coordinates = coords ?? Point<int>(0, 0),
-        super(game, title, actionList: actions, music: music);
+        super(game, title, actionList: actions, music: music) {
+    game.audioFactory.ctx.position =
+        Double3(coordinates.x.toDouble(), coordinates.y.toDouble(), 0.0);
+  }
 
   /// The lowest coordinates on the map.
   final Point<int> start;
@@ -89,6 +92,12 @@ class Zone<TT> extends Level {
       Action('Show coordinates', Hotkey(PhysicalKeyboardKey.keyC),
           triggerFunc: () => game.output('${coordinates.x}, ${coordinates.y}')),
     ]);
+  }
+
+  /// This terrain has been pushed.
+  @override
+  void onPush() {
+    super.onPush();
     startTerrains();
   }
 
