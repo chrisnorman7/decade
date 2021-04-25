@@ -30,6 +30,9 @@ class Terrain<T> {
   /// The method which is called when entering this terrain.
   void onEnter() {}
 
+  /// The method which is called when exiting this terrain.
+  void onExit() {}
+
   /// The method which is called when pressing the enter key in this terrain.
   void onActivate() {}
 }

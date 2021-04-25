@@ -172,6 +172,7 @@ class Zone<TT extends Terrain<DT>, DT> extends Level {
       coordinates = p;
       final newTerrain = terrain;
       if (newTerrain != oldTerrain) {
+        oldTerrain.onExit();
         newTerrain.onEnter();
       }
       game
