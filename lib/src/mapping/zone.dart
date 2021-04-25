@@ -100,6 +100,7 @@ class Zone<TT extends Terrain<DT>, DT> extends Level {
     startTerrains();
     game.audioFactory.ctx.position =
         Double3(coordinates.x.toDouble(), coordinates.y.toDouble(), 0.0);
+    terrain.onEnter();
   }
 
   /// This terrain has been popped, call [stopTerrains].
