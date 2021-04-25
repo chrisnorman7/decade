@@ -149,6 +149,8 @@ class Menu extends Level {
     final p = position;
     if (p == null) {
       position = 0;
+    } else if (items.isEmpty) {
+      position = null;
     } else {
       position = min(items.length - 1, p + 1);
     }
