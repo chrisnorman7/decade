@@ -106,6 +106,7 @@ class Zone<TT extends Terrain<DT>, DT> extends Level {
   /// This terrain has been popped, call [stopTerrains].
   @override
   void onPop() {
+    terrain.onExit();
     super.onPop();
     stopTerrains();
   }
