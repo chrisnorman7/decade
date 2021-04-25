@@ -18,10 +18,10 @@ import 'sound/sound.dart';
 class Level extends TitleMixin {
   /// Create a level.
   Level(this.game, this.title,
-      {List<decadeActions.Action>? actionList,
+      {List<decadeActions.LevelAction>? actionList,
       this.cancellable = false,
       List<FileSystemEntity>? music})
-      : actions = actionList ?? <decadeActions.Action>[],
+      : actions = actionList ?? <decadeActions.LevelAction>[],
         musicFiles = music ?? <FileSystemEntity>[],
         musicObjects = <Sound>[] {
     setup();
@@ -37,10 +37,10 @@ class Level extends TitleMixin {
   final String title;
 
   /// The actions which can be triggered on this level.
-  final List<decadeActions.Action> actions;
+  final List<decadeActions.LevelAction> actions;
 
   /// The currently running actions.
-  List<decadeActions.Action> get runningActions =>
+  List<decadeActions.LevelAction> get runningActions =>
       actions.where((element) => element.running == true).toList();
 
   /// Stop all running actions.

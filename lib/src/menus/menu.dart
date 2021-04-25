@@ -92,13 +92,16 @@ class Menu extends Level {
   @override
   void setup() {
     super.setup();
-    actions.addAll(<Action>[
-      Action('Move up', Hotkey(PhysicalKeyboardKey.keyW), triggerFunc: moveUp),
-      Action('Move down', Hotkey(PhysicalKeyboardKey.keyS),
+    actions.addAll(<LevelAction>[
+      LevelAction('Move up', ActionHotkey(PhysicalKeyboardKey.keyW),
+          triggerFunc: moveUp),
+      LevelAction('Move down', ActionHotkey(PhysicalKeyboardKey.keyS),
           triggerFunc: moveDown),
-      Action('Activate a menu item', Hotkey(PhysicalKeyboardKey.keyD),
+      LevelAction(
+          'Activate a menu item', ActionHotkey(PhysicalKeyboardKey.keyD),
           triggerFunc: activateItem),
-      Action('Cancel', Hotkey(PhysicalKeyboardKey.keyA), triggerFunc: cancel)
+      LevelAction('Cancel', ActionHotkey(PhysicalKeyboardKey.keyA),
+          triggerFunc: cancel)
     ]);
   }
 

@@ -24,8 +24,8 @@ import 'sound/audio_factory.dart';
 class Game implements TitleMixin {
   /// Create a new game.
   Game(this.title, this.tts, this.audioFactory,
-      {List<decadeActions.Action>? actions})
-      : globalActions = actions ?? <decadeActions.Action>[],
+      {List<decadeActions.LevelAction>? actions})
+      : globalActions = actions ?? <decadeActions.LevelAction>[],
         interfaceSoundsChannel = audioFactory.createUnpannedChannel(),
         musicChannel = audioFactory.createUnpannedChannel() {
     setup();
@@ -42,7 +42,7 @@ class Game implements TitleMixin {
   final AudioFactory audioFactory;
 
   /// Global actions that can be triggered, regardless of pushed level.
-  final List<decadeActions.Action> globalActions;
+  final List<decadeActions.LevelAction> globalActions;
 
   /// The channel for playing interface sounds through.
   final AudioChannel interfaceSoundsChannel;

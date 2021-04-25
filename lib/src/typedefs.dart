@@ -3,5 +3,5 @@ library typedefs;
 
 import 'action.dart';
 
-/// The callback type for [Action] functions.
+/// The callback type for [LevelAction] functions.
 typedef ActionCallback = void Function();

@@ -13,7 +13,7 @@ class ActionsMenu extends Menu {
             game,
             title,
             level.actions
-                .map<MenuItem>((Action action) =>
+                .map<MenuItem>((LevelAction action) =>
                     MenuItem(func: action.run, title: action.title))
                 .toList());
 

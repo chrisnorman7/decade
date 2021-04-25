@@ -11,10 +11,11 @@ import 'typedefs.dart';
 /// A class which represents a keyboard key.
 ///
 /// Instances of this class can be used to ensure only certain keys trigger an
-/// [Action].
-class Hotkey {
+/// [LevelAction].
+class ActionHotkey {
   /// Create a hotkey.
-  const Hotkey(this.physicalKey, {this.controlKey, this.altKey, this.shiftKey});
+  const ActionHotkey(this.physicalKey,
+      {this.controlKey, this.altKey, this.shiftKey});
 
   /// The flutter key which defines this hotkey.
   final PhysicalKeyboardKey physicalKey;
@@ -110,11 +111,11 @@ class Hotkey {
 
 /// An action which can be called.
 ///
-/// Actions can be triggered by the inclusion of a [Hotkey], and can be
-/// given an [Action.interval], to ensure they run on a schedule.
-class Action extends TitleMixin {
+/// Actions can be triggered by the inclusion of a [ActionHotkey], and can be
+/// given an [LevelAction.interval], to ensure they run on a schedule.
+class LevelAction extends TitleMixin {
   /// Create an action.
-  Action(this.title, this.hotkey,
+  LevelAction(this.title, this.hotkey,
       {this.triggerFunc, this.spamFunc, this.stopFunc, this.interval});
 
   /// The title of this action.
@@ -122,7 +123,7 @@ class Action extends TitleMixin {
   final String title;
 
   /// The hotkey which must be used to trigger this action.
-  final Hotkey hotkey;
+  final ActionHotkey hotkey;
 
   /// The function which will be called when this action is triggered or
   /// started.

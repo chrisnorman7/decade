@@ -36,7 +36,7 @@ class Zone<TT extends Terrain<DT>, DT> extends Level {
       Point<int>? startCoordinates,
       Point<int>? endCoordinates,
       Point<int>? coords,
-      List<Action>? actions})
+      List<LevelAction>? actions})
       : terrains = terrainList ?? {},
         terrainChannels = {},
         terrainAmbiances = {},
@@ -74,21 +74,21 @@ class Zone<TT extends Terrain<DT>, DT> extends Level {
   void setup() {
     super.setup();
     actions.addAll([
-      Action('Move north', Hotkey(PhysicalKeyboardKey.keyW),
+      LevelAction('Move north', ActionHotkey(PhysicalKeyboardKey.keyW),
           triggerFunc: () => move(MoveDirections.north),
           interval: Duration(milliseconds: 500)),
-      Action('Move east', Hotkey(PhysicalKeyboardKey.keyD),
+      LevelAction('Move east', ActionHotkey(PhysicalKeyboardKey.keyD),
           triggerFunc: () => move(MoveDirections.east),
           interval: Duration(milliseconds: 500)),
-      Action('Move south', Hotkey(PhysicalKeyboardKey.keyS),
+      LevelAction('Move south', ActionHotkey(PhysicalKeyboardKey.keyS),
           triggerFunc: () => move(MoveDirections.south),
           interval: Duration(milliseconds: 500)),
-      Action('Move west', Hotkey(PhysicalKeyboardKey.keyA),
+      LevelAction('Move west', ActionHotkey(PhysicalKeyboardKey.keyA),
           triggerFunc: () => move(MoveDirections.west),
           interval: Duration(milliseconds: 500)),
-      Action('Show coordinates', Hotkey(PhysicalKeyboardKey.keyC),
+      LevelAction('Show coordinates', ActionHotkey(PhysicalKeyboardKey.keyC),
           triggerFunc: () => game.output('${coordinates.x}, ${coordinates.y}')),
-      Action('Activate terrain', Hotkey(PhysicalKeyboardKey.enter),
+      LevelAction('Activate terrain', ActionHotkey(PhysicalKeyboardKey.enter),
           triggerFunc: activate)
     ]);
   }
