@@ -98,9 +98,9 @@ class Menu extends Level {
       LevelAction('Move down', ActionHotkey(PhysicalKeyboardKey.keyS),
           triggerFunc: moveDown),
       LevelAction(
-          'Activate a menu item', ActionHotkey(PhysicalKeyboardKey.keyD),
+          'Activate a menu item', ActionHotkey(PhysicalKeyboardKey.enter),
           triggerFunc: activateItem),
-      LevelAction('Cancel', ActionHotkey(PhysicalKeyboardKey.keyA),
+      LevelAction('Cancel', ActionHotkey(PhysicalKeyboardKey.escape),
           triggerFunc: cancel)
     ]);
   }
