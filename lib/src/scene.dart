@@ -78,6 +78,13 @@ class SceneLevel extends Level {
     }
   }
 
+  /// This level has been pushed, call [advance].
+  @override
+  void onPush() {
+    super.onPush();
+    advance();
+  }
+
   /// The method to call when this level has exhausted all of its scenes.
   @mustCallSuper
   void onDone() {
