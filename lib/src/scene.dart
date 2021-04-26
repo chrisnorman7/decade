@@ -85,12 +85,16 @@ class SceneLevel extends Level {
     advance();
   }
 
-  /// The method to call when this level has exhausted all of its scenes.
-  @mustCallSuper
-  void onDone() {
+  /// This level has been popped, stop a scene sound.
+  @override
+  void onPop() {
+    super.onPop();
     final sound = _sceneSound;
     if (sound != null) {
       game.interfaceSoundsChannel.destroySound(sound);
     }
   }
+
+  /// The method to call when this level has exhausted all of its scenes.
+  void onDone() {}
 }
