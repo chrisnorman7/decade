@@ -13,6 +13,7 @@ export 'src/mapping/terrain.dart';
 export 'src/mapping/zone.dart';
 export 'src/menus/actions_menu.dart';
 export 'src/menus/menu.dart';
+export 'src/scene.dart';
 export 'src/sound/audio_channel.dart';
 export 'src/sound/audio_factory.dart';
 export 'src/sound/sound.dart';
