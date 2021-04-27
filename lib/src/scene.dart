@@ -12,7 +12,7 @@ import 'sound/sound.dart';
 /// A scene in a [SceneLevel].
 class Scene {
   /// Create a scene.
-  Scene(this.sound, this.text);
+  Scene({this.sound, this.text});
 
   /// The sound that will be heard when this scene is current.
   final FileSystemEntity? sound;
